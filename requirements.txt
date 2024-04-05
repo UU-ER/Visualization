@@ -1,0 +1,8 @@
+streamlit
+pathlib
+h5py
+pandas
+folium
+streamlit_folium
+branca
+altair
