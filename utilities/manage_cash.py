@@ -46,9 +46,10 @@ def load_data_in_cash():
     Loads results into cash
     :return:
     """
-    load_path1 = Path(st.text_input("Enter path to result 1 h5 file:", key="folder_key1"))
-    if st.button('Load data for results 1'):
-        st.session_state['Result1'] = read_results_from_h5(load_path1)
+    st.markdown("**Load result file**")
+    uploaded_h5 = st.file_uploader("Load a result h5 file")
+    if uploaded_h5 is not None:
+        st.session_state['Result1'] = read_results_from_h5(uploaded_h5)
 
     # st.markdown("---")
     #
@@ -57,10 +58,14 @@ def load_data_in_cash():
     #     read_technology_operation(load_path2)
 
     st.markdown("**Node Locations**")
-    node_location_path = Path(st.text_input("Enter file path to location keys of nodes:", key="network"))
-    # node_location_path = Path(r'C:\Users\6574114\OneDrive - Universiteit Utrecht\PhD Jan\Papers\DOSTA - HydrogenOffshore\Node_Locations.csv')
-    if st.button("Load Node Locations"):
+    uploaded_csv = st.file_uploader("Load Node Locations")
+    if uploaded_csv is not None:
         st.session_state['NodeLocations'] = pd.read_csv(node_location_path, sep=';', index_col=0)
+
+    # node_location_path = Path(st.text_input("Enter file path to location keys of nodes:", key="network"))
+    # # node_location_path = Path(r'C:\Users\6574114\OneDrive - Universiteit Utrecht\PhD Jan\Papers\DOSTA - HydrogenOffshore\Node_Locations.csv')
+    # if st.button("Load Node Locations"):
+
 
     st.markdown("If you wish to plot networks, enter the node locations as a csv here. You can download a sample CSV"
                 " file by clicking on the button below.")
