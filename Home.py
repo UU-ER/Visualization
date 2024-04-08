@@ -20,9 +20,6 @@ if 'Result1' not in st.session_state:
 if 'NodeLocations' not in st.session_state:
     st.session_state['NodeLocations'] = None
 
-# if 'Result2' not in st.session_state:
-#     st.session_state['Result2'] = {}
-
 # Page Setup
 st.set_page_config(
     page_title="Home",
