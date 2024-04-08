@@ -15,6 +15,8 @@ from utilities import *
 # Session States
 if 'Result1' not in st.session_state:
     st.session_state['Result1'] = {}
+# if 'Result2' not in st.session_state:
+#     st.session_state['Result2'] = {}
 if 'NodeLocations' not in st.session_state:
     st.session_state['NodeLocations'] = None
 
@@ -30,7 +32,7 @@ st.set_page_config(
 show_sidebar()
 
 st.write("Welcome to the visualization platform of the PyHub! 👋")
-st.write("Select an option on the left.")
+st.write("First load your data in 'Load data' and then select an option on the right.")
 
 #
 # # Initialize Session States
