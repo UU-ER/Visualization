@@ -41,36 +41,30 @@ def clear_cash():
         # st.session_state['Result2'] = {}
         st.session_state['NodeLocations'] = None
 
-def load_data_in_cash():
+def load_result_data_in_cash():
     """
     Loads results into cash
     :return:
     """
-    st.markdown("**Load result file**")
-    uploaded_h5 = st.file_uploader("Load a result h5 file")
+    uploaded_h5 = st.file_uploader("Load a result h5 file (case 1)")
     if uploaded_h5 is not None:
         st.session_state['Result1'] = read_results_from_h5(uploaded_h5)
 
-    # st.markdown("---")
-    #
-    # load_path2 = Path(st.text_input("Optional: Enter path to result 2 h5 file (this is only required if you want to compare two results):", key="folder_key2"))
-    # if st.button('Load data for results 2'):
-    #     read_technology_operation(load_path2)
+    uploaded_h5 = st.file_uploader("Load a result h5 file (case 2)")
+    if uploaded_h5 is not None:
+        st.session_state['Result2'] = read_results_from_h5(uploaded_h5)
 
-    st.markdown("**Node Locations**")
+def load_node_data_in_cash():
+    """
+    Loads results into cash
+    :return:
+    """
     uploaded_csv = st.file_uploader("Load Node Locations")
     if uploaded_csv is not None:
-        st.session_state['NodeLocations'] = pd.read_csv(node_location_path, sep=';', index_col=0)
-
-    # node_location_path = Path(st.text_input("Enter file path to location keys of nodes:", key="network"))
-    # # node_location_path = Path(r'C:\Users\6574114\OneDrive - Universiteit Utrecht\PhD Jan\Papers\DOSTA - HydrogenOffshore\Node_Locations.csv')
-    # if st.button("Load Node Locations"):
-
+        st.session_state['NodeLocations'] = pd.read_csv(uploaded_csv, sep=';', index_col=0)
 
     st.markdown("If you wish to plot networks, enter the node locations as a csv here. You can download a sample CSV"
                 " file by clicking on the button below.")
-
-
 
     with open("./utilities/Node_Locations.csv", "rb") as file:
         btn = st.download_button(
