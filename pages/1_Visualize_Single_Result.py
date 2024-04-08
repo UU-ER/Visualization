@@ -25,13 +25,19 @@ if st.session_state['Result1']:
     if selected_page == "Technology Design":
         plot_technology_design()
     elif selected_page == "Network Design":
-        plot_network_design()
+        if isinstance(st.session_state['NodeLocations'], pd.DataFrame):
+            plot_network_design()
+        else:
+            st.markdown("Node Locations not loaded. Please upload them first in 'Load Data'.")
     elif selected_page == "Energy Balance at Node":
         plot_energy_balance()
     elif selected_page == "Technology Operation":
         plot_technology_operation()
     elif selected_page == "Network Operation":
-        plot_network_operation()
+        if isinstance(st.session_state['NodeLocations'], pd.DataFrame):
+            plot_network_operation()
+        else:
+            st.markdown("Node Locations not loaded. Please upload them first in 'Load Data'.")
 
 else:
     st.markdown("Please load in data first")
