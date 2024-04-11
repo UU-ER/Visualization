@@ -55,7 +55,7 @@ if st.session_state['Result1']:
 
     st.header("Networks")
     st.subheader("Network Design")
-    export_csv(st.session_state['Result1']['network_design'], 'Download Network Design as CSV', 'technology_design.csv')
+    export_csv(st.session_state['Result1']['network_design'], 'Download Network Design as CSV', 'network_design.csv')
     st.subheader("Network Operation")
     net_operation = st.session_state['Result1']['network_operation']
     networks = list(net_operation.columns.get_level_values('Network').unique())
