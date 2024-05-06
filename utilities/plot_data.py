@@ -54,7 +54,9 @@ def plot_technology_design():
     data = st.session_state['Result1']['technology_design']
     data = data[data['Variable']!= 'technology']
 
-    # with st.form('PlottingOptions'):
+    all_periods = data['Period'].unique()
+    selected_period = st.selectbox('**Period Selection**', all_periods)
+
     all_vars = data['Variable'].unique()
     selected_var = st.selectbox('**Variable Selection**', all_vars)
 
@@ -65,6 +67,7 @@ def plot_technology_design():
     submitted = st.button('Plot')
 
     if submitted:
+        data = data[data['Period'] == selected_period]
         data = data[data['Variable'] == selected_var]
         data = data[data['Technology'].isin(selected_technologies)]
 
@@ -84,6 +87,9 @@ def plot_energy_balance():
     """
     data = st.session_state['Result1']['energybalance']
 
+    all_periods = data.columns.get_level_values('Period').unique()
+    selected_period = st.selectbox('**Period Selection**', all_periods)
+
     carriers = data.columns.get_level_values('Carrier').unique()
     selected_carrier = st.selectbox('**Carrier Selection**', carriers)
 
@@ -100,7 +106,7 @@ def plot_energy_balance():
     # submitted = st.button('Plot')
 
     # if submitted:
-    data = data.loc[:, (selected_node, selected_carrier, slice(None), slice(None))]
+    data = data.loc[:, (selected_period, selected_node, selected_carrier, slice(None), slice(None))]
     aggregated_data = aggregate_time(data, time_agg_options[time_agg])
 
     st.header("Supply")
@@ -138,9 +144,12 @@ def plot_technology_operation():
     """
     data = st.session_state['Result1']['technology_operation']
 
+    all_periods = data.columns.get_level_values('Period').unique()
+    selected_period = st.selectbox('**Period Selection**', all_periods)
+
     nodes = data.columns.get_level_values('Node').unique()
     selected_node = st.selectbox('**Node Selection**', nodes)
-    data = data.loc[:, (selected_node, slice(None), slice(None))]
+    data = data.loc[:, (selected_period, selected_node, slice(None), slice(None))]
 
     technologies = data.columns.get_level_values('Technology').unique()
     selected_technology = st.selectbox('**Technology Selection**', technologies)
@@ -152,13 +161,13 @@ def plot_technology_operation():
                         'Hourly Totals': 'Hour'}
     time_agg = st.selectbox('**Time Aggregation**', time_agg_options.keys())
 
-    data = data.loc[:, (slice(None), selected_technology, slice(None))]
+    data = data.loc[:, (selected_period, slice(None), selected_technology, slice(None))]
     aggregated_data_sum = aggregate_time(data, time_agg_options[time_agg])
     aggregated_data_mean = aggregate_time(data, time_agg_options[time_agg], aggregation='mean')
 
     st.header("Input")
     variables_in = [col for col in aggregated_data_sum.columns.get_level_values('Variable') if col.endswith('input')]
-    plot_data = aggregated_data_sum.loc[:, (slice(None), slice(None), variables_in)]
+    plot_data = aggregated_data_sum.loc[:, (selected_period, slice(None), slice(None), variables_in)]
     plot_data.columns = plot_data.columns.get_level_values('Variable')
     if not plot_data.empty:
         chart = plot_chart(plot_data)
@@ -169,7 +178,7 @@ def plot_technology_operation():
     # Output
     st.header("Output")
     variables_out = [col for col in aggregated_data_sum.columns.get_level_values('Variable') if col.endswith('output')]
-    plot_data = aggregated_data_sum.loc[:, (slice(None), slice(None), variables_out)]
+    plot_data = aggregated_data_sum.loc[:, (selected_period, slice(None), slice(None), variables_out)]
     plot_data.columns = plot_data.columns.get_level_values('Variable')
     if not plot_data.empty:
         chart = plot_chart(plot_data)
@@ -182,9 +191,9 @@ def plot_technology_operation():
                        ((x not in variables_in) & (x not in variables_out))]
     selected_series = st.multiselect('Select Series to Filter', variables_other,
                                      default=variables_other)
-    plot_data = aggregated_data_sum.loc[:, (slice(None), slice(None), selected_series)]
+    plot_data = aggregated_data_sum.loc[:, (selected_period, slice(None), slice(None), selected_series)]
     plot_data.columns = plot_data.columns.get_level_values('Variable')
-    plot_data_mean = aggregated_data_mean.loc[:, (slice(None), slice(None), selected_series)]
+    plot_data_mean = aggregated_data_mean.loc[:, (selected_period, slice(None), slice(None), selected_series)]
     plot_data_mean.columns = plot_data_mean.columns.get_level_values('Variable')
 
     mask_sum = plot_data.columns.str.contains('level')
@@ -199,6 +208,8 @@ def plot_technology_operation():
 
 
 def plot_network_design():
+
+    # TODO: Account for periods here
     data = st.session_state['Result1']['network_design']
 
     networks_available = list(data['Network'].unique())
@@ -262,6 +273,7 @@ def plot_network_design():
 
 
 def plot_network_operation():
+    # Todo: fix with period
     data = st.session_state['Result1']['network_operation']
 
     networks = data.columns.get_level_values('Network').unique()

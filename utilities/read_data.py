@@ -119,7 +119,7 @@ def read_energy_balance(path_h5):
         df_bal = extract_datasets_from_h5_group(hdf_file["operation/energy_balance"])
 
 
-    df_bal = df_bal.rename_axis(columns=['Node', 'Carrier', 'Variable'])
+    df_bal = df_bal.rename_axis(columns=['Period', 'Node', 'Carrier', 'Variable'])
     df_bal = add_time_steps_to_df(df_bal)
 
     return df_bal
@@ -131,7 +131,7 @@ def read_technology_operation(path_h5):
     with h5py.File(path_h5, 'r') as hdf_file:
         df_ope = extract_datasets_from_h5_group(hdf_file["operation/technology_operation"])
 
-    df_ope = df_ope.rename_axis(columns=['Node', 'Technology', 'Variable'])
+    df_ope = df_ope.rename_axis(columns=['Period', 'Node', 'Technology', 'Variable'])
     df_ope = add_time_steps_to_df(df_ope)
 
     return df_ope
@@ -143,7 +143,7 @@ def read_technology_design(path_h5):
     with h5py.File(path_h5, 'r') as hdf_file:
         technology_design = extract_datasets_from_h5_group(hdf_file["design/nodes"])
         technology_design = pd.melt(technology_design)
-        technology_design.columns = ['Node', 'Technology', 'Variable', 'Value']
+        technology_design.columns = ['Period', 'Node', 'Technology', 'Variable', 'Value']
 
     return technology_design
 
@@ -151,24 +151,26 @@ def read_networks(path_h5):
     with h5py.File(path_h5, 'r') as hdf_file:
         network_design = extract_datasets_from_h5_group(hdf_file["design/networks"])
 
-    network_design = network_design.melt()
-    network_design.columns = ['Network', 'Arc_ID', 'Variable', 'Value']
-    network_design = network_design.pivot(columns='Variable', index=['Arc_ID', 'Network'], values='Value')
-    network_design['FromNode'] = network_design['fromNode'].str.decode('utf-8')
-    network_design['ToNode'] = network_design['toNode'].str.decode('utf-8')
-    network_design.drop(columns=['fromNode', 'toNode', 'network'], inplace=True)
-    network_design = network_design.reset_index()
-    arc_ids = network_design[['Arc_ID', 'FromNode', 'ToNode']]
+    if not network_design.empty:
+        network_design = network_design.melt()
+        network_design.columns = ['Period', 'Network', 'Arc_ID', 'Variable', 'Value']
+        network_design = network_design.pivot(columns='Variable', index=['Period', 'Arc_ID', 'Network'], values='Value')
+        network_design['FromNode'] = network_design['fromNode'].str.decode('utf-8')
+        network_design['ToNode'] = network_design['toNode'].str.decode('utf-8')
+        network_design.drop(columns=['fromNode', 'toNode', 'network'], inplace=True)
+        network_design = network_design.reset_index()
+        arc_ids = network_design[['Arc_ID', 'FromNode', 'ToNode']]
 
     with h5py.File(path_h5, 'r') as hdf_file:
         network_operation = extract_datasets_from_h5_group(hdf_file["operation/networks"])
 
-    network_operation.columns.names = ['Network', 'Arc_ID', 'Variable']
+    if not network_operation.empty:
+        network_operation.columns.names = ['Period', 'Network', 'Arc_ID', 'Variable']
 
-    network_operation = network_operation.T.reset_index()
-    network_operation = pd.merge(network_operation, arc_ids.drop_duplicates(subset=['Arc_ID']), how='inner', left_on='Arc_ID', right_on='Arc_ID')
-    network_operation = network_operation.set_index(['Network', 'Arc_ID', 'Variable', 'FromNode', 'ToNode']).T
+        network_operation = network_operation.T.reset_index()
+        network_operation = pd.merge(network_operation, arc_ids.drop_duplicates(subset=['Arc_ID']), how='inner', left_on='Arc_ID', right_on='Arc_ID')
+        network_operation = network_operation.set_index(['Period', 'Network', 'Arc_ID', 'Variable', 'FromNode', 'ToNode']).T
 
-    network_operation = add_time_steps_to_df(network_operation)
+        network_operation = add_time_steps_to_df(network_operation)
 
     return network_design, network_operation
