@@ -96,7 +96,7 @@ def read_results_from_h5(path_h5):
     Reads the energybalance, technology operation, design and network operation, design into a dict
     """
     res = {}
-
+    res['summary'] = read_summary(path_h5)
     loading_data_bar = st.progress(0, text="Loading energy balance")
     res['energybalance'] = read_energy_balance(path_h5)
     loading_data_bar.progress(20, text="Loading technology operation")
@@ -109,7 +109,14 @@ def read_results_from_h5(path_h5):
 
     return res
     
+def read_summary(path_h5):
+    """
+    Reads summary
+    """
+    with h5py.File(path_h5, 'r') as hdf_file:
+        df_summary = extract_datasets_from_h5_group(hdf_file["summary"])
 
+    return df_summary
 
 def read_energy_balance(path_h5):
     """

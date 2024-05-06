@@ -33,6 +33,11 @@ st.markdown("This page allows to download data as csv files. Note that always da
 
 if st.session_state['Result1']:
 
+    st.header("Summary")
+    export_csv(st.session_state['Result1']['summary'], 'Download Summary as '
+                                                                 'CSV', 'summary.csv')
+
+
     st.header("Technologies")
     st.subheader("Technology Design")
     export_csv(st.session_state['Result1']['technology_design'], 'Download Technology Design as CSV', 'technology_design.csv')
