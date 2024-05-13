@@ -13,6 +13,8 @@ from utilities import *
 # import sys
 
 # Session States
+if 'Summary' not in st.session_state:
+    st.session_state['Summary'] = None
 if 'Result1' not in st.session_state:
     st.session_state['Result1'] = {}
 # if 'Result2' not in st.session_state:
