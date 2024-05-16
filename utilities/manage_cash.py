@@ -16,6 +16,12 @@ def show_cash_status():
     Displays that cash status
     :return:
     """
+
+    if isinstance(st.session_state['Summary'], pd.DataFrame):
+        st.sidebar.success("Summary file successfully loaded")
+    else:
+        st.sidebar.error("Summary file not loaded")
+
     if st.session_state['Result1']:
         st.sidebar.success("Results 1 successfully loaded")
     else:
@@ -40,12 +46,29 @@ def clear_cash():
         st.session_state['Result1'] = {}
         # st.session_state['Result2'] = {}
         st.session_state['NodeLocations'] = None
+        st.session_state['Summary'] = None
+
+def load_summary_data_in_cash():
+    """
+    Loads summary file in cash
+    :return:
+    """
+    st.markdown("In this section, you can load a summary csv file for visualization. "
+                "After sucessfully loading the data, you can select 'Visualize "
+                "Summary' on the sidebar.")
+    uploaded_summary = st.file_uploader("Load a summary xlsx")
+    if uploaded_summary is not None:
+        st.session_state['Summary'] = pd.read_excel(uploaded_summary)
 
 def load_result_data_in_cash():
     """
     Loads results into cash
     :return:
     """
+    st.markdown("In this section, you can load one or two h5 files to visualize. After "
+                "sucessfully loading the data, "
+                "you can select 'Visualize Single Result' or 'Compare Results' on the sidebar.")
+
     uploaded_h5 = st.file_uploader("Load a result h5 file (case 1)")
     if uploaded_h5 is not None:
         st.session_state['Result1'] = read_results_from_h5(uploaded_h5)

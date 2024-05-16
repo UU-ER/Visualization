@@ -29,6 +29,39 @@ def plot_chart(df):
 
     return chart
 
+def plot_summary(data):
+    # Select graph
+    all_graphs = ["Line Chart", "Scatter Plot"]
+    selected_chart = st.selectbox("**Select a Chart**", all_graphs)
+
+    # Select Var
+    all_vars = data.columns
+    selected_x = st.selectbox('**Select x values**', all_vars)
+    selected_y = st.selectbox('**Select y values**', all_vars)
+
+    st.text(selected_y)
+
+    if selected_chart == "Line Chart":
+        chart = alt.Chart(data).mark_line().encode(
+            x=alt.X(selected_x),
+            y=alt.Y(selected_y)
+        ).properties(
+            width=800,
+            height=400
+        ).interactive()
+        st.altair_chart(chart)
+
+
+    elif selected_chart == "Scatter Plot":
+        chart = alt.Chart(data).mark_point().encode(
+            x=alt.X(selected_x),
+            y=alt.Y(selected_y)
+        ).properties(
+            width=800,
+            height=400
+        ).interactive()
+        st.altair_chart(chart)
+
 def plot_nodes(map, node_data):
     for node_name, data in node_data.iterrows():
         folium.CircleMarker(
