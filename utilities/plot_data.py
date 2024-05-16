@@ -36,15 +36,17 @@ def plot_summary(data):
 
     # Select Var
     all_vars = data.columns
-    selected_x = st.selectbox('**Select x values**', all_vars)
-    selected_y = st.selectbox('**Select y values**', all_vars)
+    selected_x = st.selectbox('**Select x value**', all_vars)
+    selected_y = st.multiselect('**Select y values**', all_vars)
 
-    st.text(selected_y)
+    plot_data = data.reset_index().melt(id_vars=["index", selected_x])
+    plot_data = plot_data[plot_data["variable"].isin(selected_y)]
 
     if selected_chart == "Line Chart":
-        chart = alt.Chart(data).mark_line().encode(
+        chart = alt.Chart(plot_data).mark_line().encode(
             x=alt.X(selected_x),
-            y=alt.Y(selected_y)
+            y=alt.Y("value"),
+            color = alt.Color("variable", legend=alt.Legend())
         ).properties(
             width=800,
             height=400
@@ -53,9 +55,10 @@ def plot_summary(data):
 
 
     elif selected_chart == "Scatter Plot":
-        chart = alt.Chart(data).mark_point().encode(
+        chart = alt.Chart(plot_data).mark_point().encode(
             x=alt.X(selected_x),
-            y=alt.Y(selected_y)
+            y=alt.Y("value"),
+            color = alt.Color("variable", legend=alt.Legend())
         ).properties(
             width=800,
             height=400
