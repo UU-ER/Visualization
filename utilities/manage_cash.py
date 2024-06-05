@@ -11,6 +11,17 @@ def show_sidebar():
     clear_cash()
     show_cash_status()
 
+def manage_session_states():
+    """
+    Initilize all required session states
+    """
+    if 'Summary' not in st.session_state:
+        st.session_state['Summary'] = None
+    if 'Result1' not in st.session_state:
+        st.session_state['Result1'] = {}
+    if 'NodeLocations' not in st.session_state:
+        st.session_state['NodeLocations'] = None
+
 def show_cash_status():
     """
     Displays that cash status
@@ -27,11 +38,6 @@ def show_cash_status():
     else:
         st.sidebar.error("Results 1 not loaded")
 
-    # if st.session_state['Result2']:
-    #     st.sidebar.success("Results 2 successfully loaded")
-    # else:
-    #     st.sidebar.error("Results 2 not loaded")
-
     if  isinstance(st.session_state['NodeLocations'], pd.DataFrame):
         st.sidebar.success("Node locations successfully loaded")
     else:
@@ -44,7 +50,6 @@ def clear_cash():
     """
     if st.sidebar.button('Reset data'):
         st.session_state['Result1'] = {}
-        # st.session_state['Result2'] = {}
         st.session_state['NodeLocations'] = None
         st.session_state['Summary'] = None
 
@@ -73,10 +78,6 @@ def load_result_data_in_cash():
     if uploaded_h5 is not None:
         st.session_state['Result1'] = read_results_from_h5(uploaded_h5)
 
-    uploaded_h5 = st.file_uploader("Load a result h5 file (case 2)")
-    if uploaded_h5 is not None:
-        st.session_state['Result2'] = read_results_from_h5(uploaded_h5)
-
 def load_node_data_in_cash():
     """
     Loads results into cash
@@ -95,5 +96,4 @@ def load_node_data_in_cash():
             data=file,
             file_name="Node_Locations.csv",
         )
-
 
