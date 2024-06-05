@@ -18,8 +18,6 @@ st.sidebar.markdown("---")
 
 if st.session_state['Result1']:
 
-    st.text(st.session_state['Result1']["k_means_specs"])
-
     # Page to show
     st.sidebar.markdown('**Graph**')
     pages_available = ["Technology Design", "Network Design",
