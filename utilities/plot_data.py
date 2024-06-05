@@ -121,15 +121,13 @@ def plot_energy_balance():
     """
     Plots the energy balance
     """
-    data = st.session_state['Result1']['energybalance']
-
-    all_periods = data.columns.get_level_values('Period').unique()
+    all_periods = st.session_state['Result1']['topology']['periods']
     selected_period = st.selectbox('**Period Selection**', all_periods)
 
-    carriers = data.columns.get_level_values('Carrier').unique()
+    carriers = st.session_state['Result1']['topology']['carriers']
     selected_carrier = st.selectbox('**Carrier Selection**', carriers)
 
-    nodes = data.columns.get_level_values('Node').unique()
+    nodes = st.session_state['Result1']['topology']['nodes']
     selected_node = st.selectbox('**Node Selection**', nodes)
 
     time_agg_options = {'Annual Totals': 'Year',
@@ -139,9 +137,8 @@ def plot_energy_balance():
                         'Hourly Totals': 'Hour'}
     time_agg = st.selectbox('**Time Aggregation**', time_agg_options.keys())
 
-    # submitted = st.button('Plot')
+    data = st.session_state['Result1']['energybalance']
 
-    # if submitted:
     data = data.loc[:, (selected_period, selected_node, selected_carrier, slice(None), slice(None))]
     aggregated_data = aggregate_time(data, time_agg_options[time_agg])
 
@@ -178,13 +175,14 @@ def plot_technology_operation():
     """
     Plots technology operation
     """
-    data = st.session_state['Result1']['technology_operation']
-
-    all_periods = data.columns.get_level_values('Period').unique()
+    all_periods = st.session_state['Result1']['topology']['periods']
     selected_period = st.selectbox('**Period Selection**', all_periods)
 
-    nodes = data.columns.get_level_values('Node').unique()
+    nodes = st.session_state['Result1']['topology']['nodes']
     selected_node = st.selectbox('**Node Selection**', nodes)
+
+    data = st.session_state['Result1']['technology_operation']
+
     data = data.loc[:, (selected_period, selected_node, slice(None), slice(None))]
 
     technologies = data.columns.get_level_values('Technology').unique()

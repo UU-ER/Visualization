@@ -3,6 +3,9 @@ from pathlib import Path
 
 from utilities import *
 
+# Session States
+manage_session_states()
+
 # Page Setup
 st.set_page_config(
     page_title="Visualize Single Result",
@@ -14,6 +17,9 @@ show_sidebar()
 st.sidebar.markdown("---")
 
 if st.session_state['Result1']:
+
+    st.text(st.session_state['Result1']["k_means_specs"])
+
     # Page to show
     st.sidebar.markdown('**Graph**')
     pages_available = ["Technology Design", "Network Design",

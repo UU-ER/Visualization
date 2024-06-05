@@ -1,6 +1,9 @@
 from utilities import *
 import streamlit as st
 
+# Session States
+manage_session_states()
+
 # Load Summary
 st.markdown("**Summary File**")
 load_summary_data_in_cash()

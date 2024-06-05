@@ -1,7 +1,8 @@
 import h5py
 import pandas as pd
 import streamlit as st
-import numpy as np
+
+from .process_data import add_time_steps_to_df
 
 @st.cache_data
 def load_nodes_from_h5_results(path):
@@ -24,6 +25,16 @@ def load_carriers_from_h5_results(path):
 
     return carriers
 
+@st.cache_data
+def load_periods_from_h5_results(path):
+    """
+    Loads all carriers contained in a results file as a list
+    """
+    with h5py.File(path) as hdf_file:
+        periods = extract_data_from_h5_dataset(hdf_file["topology/periods"])
+
+    return periods
+
 
 def extract_datasets_from_h5_group(group, prefix=()):
     """
@@ -42,9 +53,7 @@ def extract_datasets_from_h5_group(group, prefix=()):
             else:
                 data[prefix + (key,)] = value[:]
 
-    df = pd.DataFrame(data)
-
-    return df
+    return data
 
 
 def extract_data_from_h5_dataset(dataset):
@@ -75,37 +84,51 @@ def export_csv(df, label, filename):
     )
 
 
-def add_time_steps_to_df(df):
-    """
-    Adds time index to a df
-    """
-    hour = df.index.to_list()
-    num_rows = len(hour)
-    day = np.repeat(np.arange(1, num_rows + 1), 24)[0:num_rows]
-    week = np.repeat(np.arange(1, num_rows + 1), 24 * 7)[0:num_rows]
-    month = pd.date_range(start='2008-01-01 00:00', end='2008-12-31 00:00', freq='1h').month[0:num_rows].to_list()
-    year = np.ones(num_rows)
-
-    df.index = pd.MultiIndex.from_arrays([hour, day, week, month, year],
-                                             names=['Hour', 'Day', 'Week', 'Month', 'Year'])
-    
-    return df
-
 def read_results_from_h5(path_h5):
     """
     Reads the energybalance, technology operation, design and network operation, design into a dict
     """
+    def process_k_means(d:dict, column_names, k_means_specs):
+
+        data = {}
+        if k_means_specs:
+
+            for key in d:
+                period = key[0]
+                seq = k_means_specs[(period, 'sequence')]
+                n_clustered = max(seq)
+
+                if len(d[key]) == n_clustered:
+                    data[key] = d[key][seq - 1]
+                else:
+                    data[key] = d[key]
+        else:
+            for key in d:
+                data[key] = d[key]
+
+        df = pd.DataFrame(data)
+        df = df.rename_axis(columns=column_names)
+        df = add_time_steps_to_df(df)
+
+        return df
+
     res = {}
+    res['topology'] = read_topology(path_h5)
+    res['k_means_specs'] = read_k_means_specs(path_h5)
     res['summary'] = read_summary(path_h5)
     loading_data_bar = st.progress(0, text="Loading energy balance")
-    res['energybalance'] = read_energy_balance(path_h5)
+    ebalance = read_energy_balance(path_h5)
+    res['energybalance'] = process_k_means(ebalance, ['Period', 'Node', 'Carrier',
+                                                      'Variable'], res['k_means_specs'])
     loading_data_bar.progress(20, text="Loading technology operation")
-    res['technology_operation'] = read_technology_operation(path_h5)
+    technology_operation = read_technology_operation(path_h5)
+    res['technology_operation'] = process_k_means(technology_operation, ['Period', 'Node', 'Technology', 'Variable'], res['k_means_specs'])
     loading_data_bar.progress(60, text="Loading technology design")
     res['technology_design'] = read_technology_design(path_h5)
     loading_data_bar.progress(80, text="Loading network operation and design")
     res['network_design'], res['network_operation'] = read_networks(path_h5)
     loading_data_bar.progress(100, text="Done")
+
 
     return res
     
@@ -114,7 +137,9 @@ def read_summary(path_h5):
     Reads summary
     """
     with h5py.File(path_h5, 'r') as hdf_file:
-        df_summary = extract_datasets_from_h5_group(hdf_file["summary"])
+        summary = extract_datasets_from_h5_group(hdf_file["summary"])
+
+    df_summary = pd.DataFrame(summary)
 
     return df_summary
 
@@ -123,25 +148,18 @@ def read_energy_balance(path_h5):
     Reads energybalance
     """
     with h5py.File(path_h5, 'r') as hdf_file:
-        df_bal = extract_datasets_from_h5_group(hdf_file["operation/energy_balance"])
+        bal = extract_datasets_from_h5_group(hdf_file["operation/energy_balance"])
 
-
-    df_bal = df_bal.rename_axis(columns=['Period', 'Node', 'Carrier', 'Variable'])
-    df_bal = add_time_steps_to_df(df_bal)
-
-    return df_bal
+    return bal
 
 def read_technology_operation(path_h5):
     """
     Reads technology operation
     """
     with h5py.File(path_h5, 'r') as hdf_file:
-        df_ope = extract_datasets_from_h5_group(hdf_file["operation/technology_operation"])
+        ope = extract_datasets_from_h5_group(hdf_file["operation/technology_operation"])
 
-    df_ope = df_ope.rename_axis(columns=['Period', 'Node', 'Technology', 'Variable'])
-    df_ope = add_time_steps_to_df(df_ope)
-
-    return df_ope
+    return ope
 
 def read_technology_design(path_h5):
     """
@@ -149,8 +167,10 @@ def read_technology_design(path_h5):
     """
     with h5py.File(path_h5, 'r') as hdf_file:
         technology_design = extract_datasets_from_h5_group(hdf_file["design/nodes"])
-        technology_design = pd.melt(technology_design)
-        technology_design.columns = ['Period', 'Node', 'Technology', 'Variable', 'Value']
+
+    technology_design = pd.DataFrame(technology_design)
+    technology_design = pd.melt(technology_design)
+    technology_design.columns = ['Period', 'Node', 'Technology', 'Variable', 'Value']
 
     return technology_design
 
@@ -158,6 +178,7 @@ def read_networks(path_h5):
     with h5py.File(path_h5, 'r') as hdf_file:
         network_design = extract_datasets_from_h5_group(hdf_file["design/networks"])
 
+    network_design = pd.DataFrame(network_design)
     if not network_design.empty:
         network_design = network_design.melt()
         network_design.columns = ['Period', 'Network', 'Arc_ID', 'Variable', 'Value']
@@ -171,13 +192,28 @@ def read_networks(path_h5):
     with h5py.File(path_h5, 'r') as hdf_file:
         network_operation = extract_datasets_from_h5_group(hdf_file["operation/networks"])
 
-    if not network_operation.empty:
-        network_operation.columns.names = ['Period', 'Network', 'Arc_ID', 'Variable']
-
-        network_operation = network_operation.T.reset_index()
-        network_operation = pd.merge(network_operation, arc_ids.drop_duplicates(subset=['Arc_ID']), how='inner', left_on='Arc_ID', right_on='Arc_ID')
-        network_operation = network_operation.set_index(['Period', 'Network', 'Arc_ID', 'Variable', 'FromNode', 'ToNode']).T
-
-        network_operation = add_time_steps_to_df(network_operation)
+    # if not network_operation.empty:
+    #     network_operation.columns.names = ['Period', 'Network', 'Arc_ID', 'Variable']
+    #
+    #     network_operation = network_operation.T.reset_index()
+    #     network_operation = pd.merge(network_operation, arc_ids.drop_duplicates(subset=['Arc_ID']), how='inner', left_on='Arc_ID', right_on='Arc_ID')
+    #     network_operation = network_operation.set_index(['Period', 'Network', 'Arc_ID', 'Variable', 'FromNode', 'ToNode']).T
+    #
+    #     network_operation = add_time_steps_to_df(network_operation)
 
     return network_design, network_operation
+
+def read_topology(path_h5):
+
+    topology = {}
+    topology['nodes'] = load_nodes_from_h5_results(path_h5)
+    topology['carriers'] = load_carriers_from_h5_results(path_h5)
+    topology['periods'] = load_periods_from_h5_results(path_h5)
+
+    return topology
+
+def read_k_means_specs(path_h5):
+    with h5py.File(path_h5, 'r') as hdf_file:
+        k_means_specs = extract_datasets_from_h5_group(hdf_file["k_means_specs"])
+
+    return k_means_specs
