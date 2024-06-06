@@ -70,9 +70,9 @@ def load_result_data_in_cash():
     Loads results into cash
     :return:
     """
-    st.markdown("In this section, you can load one or two h5 files to visualize. After "
+    st.markdown("In this section, you can load a h5 files to visualize. After "
                 "sucessfully loading the data, "
-                "you can select 'Visualize Single Result' or 'Compare Results' on the sidebar.")
+                "you can select 'Visualize Single Result'")
 
     uploaded_h5 = st.file_uploader("Load a result h5 file (case 1)")
     if uploaded_h5 is not None:
