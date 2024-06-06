@@ -12,41 +12,44 @@ st.set_page_config(
 )
 
 # Show cash status
-st.sidebar.markdown('**Cash Status**')
+st.sidebar.markdown("**Cash Status**")
 show_sidebar()
 st.sidebar.markdown("---")
 
-if st.session_state['Result1']:
+if st.session_state["Result1"]:
 
     # Page to show
-    st.sidebar.markdown('**Graph**')
-    pages_available = ["Technology Design", "Network Design",
-                       "Energy Balance at Node",
-                       "Technology Operation", "Network Operation"]
+    st.sidebar.markdown("**Graph**")
+    pages_available = [
+        "Technology Design",
+        "Network Design",
+        "Energy Balance at Node",
+        "Technology Operation",
+        "Network Operation",
+    ]
     selected_page = st.sidebar.selectbox("Select graph", pages_available)
 
     # Individual pages
     if selected_page == "Technology Design":
         plot_technology_design()
     elif selected_page == "Network Design":
-        if isinstance(st.session_state['NodeLocations'], pd.DataFrame):
+        if isinstance(st.session_state["NodeLocations"], pd.DataFrame):
             plot_network_design()
         else:
-            st.markdown("Node Locations not loaded. Please upload them first in 'Load Data'.")
+            st.markdown(
+                "Node Locations not loaded. Please upload them first in 'Load Data'."
+            )
     elif selected_page == "Energy Balance at Node":
         plot_energy_balance()
     elif selected_page == "Technology Operation":
         plot_technology_operation()
     elif selected_page == "Network Operation":
-        if isinstance(st.session_state['NodeLocations'], pd.DataFrame):
+        if isinstance(st.session_state["NodeLocations"], pd.DataFrame):
             plot_network_operation()
         else:
-            st.markdown("Node Locations not loaded. Please upload them first in 'Load Data'.")
+            st.markdown(
+                "Node Locations not loaded. Please upload them first in 'Load Data'."
+            )
 
 else:
     st.markdown("Please load in data first")
-
-
-
-
-

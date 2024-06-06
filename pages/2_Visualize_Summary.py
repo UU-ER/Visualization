@@ -11,18 +11,13 @@ st.set_page_config(
 )
 
 # Show cash status
-st.sidebar.markdown('**Cash Status**')
+st.sidebar.markdown("**Cash Status**")
 show_sidebar()
 st.sidebar.markdown("---")
 
-if st.session_state['Summary'] is not None:
+if st.session_state["Summary"] is not None:
     # Page to show
-    data = st.session_state['Summary']
+    data = st.session_state["Summary"]
     plot_summary(data)
 else:
     st.markdown("Please load in data first")
-
-
-
-
-
