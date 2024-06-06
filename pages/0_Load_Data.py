@@ -18,6 +18,3 @@ load_node_data_in_cash()
 
 # Show sidebar
 show_sidebar()
-
-
-
