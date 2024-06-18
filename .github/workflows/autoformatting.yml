@@ -3,8 +3,8 @@ name: Autoformatting
 on:
   pull_request:
     branches:
-      - 'develop**'
-      - master
+      - 'develop'
+      - 'master'
 
 jobs:
   lint:
