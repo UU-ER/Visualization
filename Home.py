@@ -11,5 +11,5 @@ st.set_page_config(
 # Show cash status
 show_sidebar()
 
-st.write("Welcome to the visualization platform of the PyHub! 👋")
+st.write("Welcome to the visualization platform of the AdOpT-NET0! 👋")
 st.write("First load your data in 'Load data' and then select an option on the right.")
