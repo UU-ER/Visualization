@@ -11,10 +11,6 @@ st.set_page_config(
     page_title="Visualize Single Result",
 )
 
-# Show cash status
-st.sidebar.markdown("**Cash Status**")
-show_sidebar()
-st.sidebar.markdown("---")
 
 if st.session_state["Result1"]:
 
@@ -28,6 +24,13 @@ if st.session_state["Result1"]:
         "Network Operation",
     ]
     selected_page = st.sidebar.selectbox("Select graph", pages_available)
+
+# Show cash status
+st.sidebar.markdown("**Cash Status**")
+show_sidebar()
+st.sidebar.markdown("---")
+
+if st.session_state["Result1"]:
 
     # Individual pages
     if selected_page == "Technology Design":
