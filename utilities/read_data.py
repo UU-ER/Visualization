@@ -1,4 +1,5 @@
 import h5py
+import numpy as np
 import pandas as pd
 import streamlit as st
 
@@ -135,7 +136,12 @@ def read_results_from_h5(path_h5):
     loading_data_bar.progress(60, text="Loading technology design")
     res["technology_design"] = read_technology_design(path_h5)
     loading_data_bar.progress(80, text="Loading network operation and design")
-    res["network_design"], res["network_operation"] = read_networks(path_h5)
+    res["network_design"], network_operation = read_networks(path_h5)
+    res["network_operation"] = process_k_means(
+        network_operation,
+        ["Period", "Network", "Arc_ID", "Variable", "FromNode", "ToNode"],
+        res["k_means_specs"],
+    )
     loading_data_bar.progress(100, text="Done")
 
     return res
@@ -169,7 +175,6 @@ def read_technology_operation(path_h5):
     """
     with h5py.File(path_h5, "r") as hdf_file:
         ope = extract_datasets_from_h5_group(hdf_file["operation/technology_operation"])
-
     return ope
 
 
@@ -208,17 +213,31 @@ def read_networks(path_h5):
         network_operation = extract_datasets_from_h5_group(
             hdf_file["operation/networks"]
         )
+        # st.text(network_operation)
 
-    # if not network_operation.empty:
-    #     network_operation.columns.names = ['Period', 'Network', 'Arc_ID', 'Variable']
-    #
-    #     network_operation = network_operation.T.reset_index()
-    #     network_operation = pd.merge(network_operation, arc_ids.drop_duplicates(subset=['Arc_ID']), how='inner', left_on='Arc_ID', right_on='Arc_ID')
-    #     network_operation = network_operation.set_index(['Period', 'Network', 'Arc_ID', 'Variable', 'FromNode', 'ToNode']).T
-    #
-    #     network_operation = add_time_steps_to_df(network_operation)
+    if network_operation:
+        network_operation = pd.DataFrame(network_operation)
 
-    return network_design, network_operation
+        network_operation.columns.names = ["Period", "Network", "Arc_ID", "Variable"]
+
+        network_operation = network_operation.T.reset_index()
+        network_operation = pd.merge(
+            network_operation,
+            arc_ids.drop_duplicates(subset=["Arc_ID"]),
+            how="inner",
+            left_on="Arc_ID",
+            right_on="Arc_ID",
+        )
+        network_operation = network_operation.set_index(
+            ["Period", "Network", "Arc_ID", "Variable", "FromNode", "ToNode"]
+        ).T
+
+        network_operation = network_operation.to_dict(orient="list")
+        ope = {}
+        for key in network_operation:
+            ope[key] = np.array(network_operation[key])
+
+    return network_design, ope
 
 
 def read_topology(path_h5):
