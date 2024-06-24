@@ -300,8 +300,11 @@ def plot_technology_operation():
 
 def plot_network_design():
 
-    # TODO: Account for periods here
+    all_periods = st.session_state["Result1"]["topology"]["periods"]
+    selected_period = st.selectbox("**Period Selection**", all_periods)
     data = st.session_state["Result1"]["network_design"]
+
+    st.text(data)
 
     networks_available = list(data["Network"].unique())
     selected_netw = st.multiselect("Select a network:", networks_available)
@@ -311,6 +314,7 @@ def plot_network_design():
     variables_available.remove("Network")
     variables_available.remove("FromNode")
     variables_available.remove("ToNode")
+    variables_available.remove("Period")
 
     selected_variable = st.selectbox("Select a variable:", variables_available)
 
@@ -323,6 +327,7 @@ def plot_network_design():
     plot_nodes(map, node_data)
 
     data = data[data["Network"].isin(selected_netw)]
+    data = data[data["Period"].isin([selected_period])]
     if not data.empty:
 
         arc_ids = data[["Arc_ID", "FromNode", "ToNode"]]
@@ -368,10 +373,11 @@ def plot_network_design():
 
 
 def plot_network_operation():
-    # Todo: fix with period
-    data = st.session_state["Result1"]["network_operation"]
 
-    networks = data.columns.get_level_values("Network").unique()
+    data = st.session_state["Result1"]["network_operation"]
+    all_periods = st.session_state["Result1"]["topology"]["periods"]
+    selected_period = st.selectbox("**Period Selection**", all_periods)
+    networks = data.columns.get_level_values(1).unique()
     selected_network = st.multiselect("**Network Selection**", networks)
 
     time_agg_options = {
@@ -381,8 +387,19 @@ def plot_network_operation():
         "Daily Totals": "Day",
         "Hourly Totals": "Hour",
     }
+
     time_agg = st.selectbox("**Time Aggregation**", time_agg_options.keys())
-    data = data.loc[:, (selected_network, slice(None), "flow")]
+    data = data.loc[
+        :,
+        (
+            selected_period,
+            selected_network,
+            slice(None),
+            "flow",
+            slice(None),
+            slice(None),
+        ),
+    ]
     aggregated_data = aggregate_time(data, time_agg_options[time_agg])
 
     if time_agg != "Annual Totals":
