@@ -112,7 +112,6 @@ def read_results_from_h5(path_h5):
                 data[key] = d[key]
 
         df = pd.DataFrame(data)
-        st.text(df)
         df = df.rename_axis(columns=column_names)
         df = add_time_steps_to_df(df)
 
@@ -237,7 +236,6 @@ def read_networks(path_h5):
         ope = {}
         for key in network_operation:
             ope[key] = np.array(network_operation[key])
-        st.text(ope)
 
     return network_design, ope
 

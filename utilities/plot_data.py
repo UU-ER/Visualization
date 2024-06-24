@@ -304,8 +304,6 @@ def plot_network_design():
     selected_period = st.selectbox("**Period Selection**", all_periods)
     data = st.session_state["Result1"]["network_design"]
 
-    st.text(data)
-
     networks_available = list(data["Network"].unique())
     selected_netw = st.multiselect("Select a network:", networks_available)
 
