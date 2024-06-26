@@ -137,7 +137,7 @@ def read_results_from_h5(path_h5):
     res["technology_design"] = read_technology_design(path_h5)
     loading_data_bar.progress(80, text="Loading network operation and design")
     res["network_design"], network_operation = read_networks(path_h5)
-    if not network_operation:
+    if network_operation:
         res["network_operation"] = process_k_means(
             network_operation,
             ["Period", "Network", "Arc_ID", "Variable", "FromNode", "ToNode"],
