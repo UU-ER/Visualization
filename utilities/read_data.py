@@ -137,11 +137,12 @@ def read_results_from_h5(path_h5):
     res["technology_design"] = read_technology_design(path_h5)
     loading_data_bar.progress(80, text="Loading network operation and design")
     res["network_design"], network_operation = read_networks(path_h5)
-    res["network_operation"] = process_k_means(
-        network_operation,
-        ["Period", "Network", "Arc_ID", "Variable", "FromNode", "ToNode"],
-        res["k_means_specs"],
-    )
+    if network_operation:
+        res["network_operation"] = process_k_means(
+            network_operation,
+            ["Period", "Network", "Arc_ID", "Variable", "FromNode", "ToNode"],
+            res["k_means_specs"],
+        )
     loading_data_bar.progress(100, text="Done")
 
     return res
@@ -236,6 +237,8 @@ def read_networks(path_h5):
         ope = {}
         for key in network_operation:
             ope[key] = np.array(network_operation[key])
+    else:
+        ope = {}
 
     return network_design, ope
 
