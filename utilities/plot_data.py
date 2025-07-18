@@ -189,7 +189,7 @@ def plot_energy_balance():
 
     st.header("Demand")
     # Multi-select box for filtering series
-    series_demand = ["demand", "technology_inputs", "network_outflow", "export"]
+    series_demand = ["demand", "technology_inputs", "compressor_input", "network_outflow", "export"]
     selected_demand_series = st.multiselect(
         "Select Series to Filter", series_demand, default=series_demand
     )
