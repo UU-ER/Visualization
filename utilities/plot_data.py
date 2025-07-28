@@ -444,9 +444,12 @@ def plot_network_operation():
                 & (data["ToNode"] == from_node_data.name)
             ]
 
-            uni_flow = (
-                flow_this_direction - flow_other_direction.loc[:, "Flow"].values[0]
-            )
+            if not flow_other_direction.empty and flow_other_direction.loc[:, "Flow"].values[0]:
+                uni_flow = (
+                        flow_this_direction - flow_other_direction.loc[:, "Flow"].values[0]
+                )
+            else:
+                uni_flow = flow_this_direction
 
             if uni_flow > 0.1:
                 normalized_value = uni_flow / max_value
