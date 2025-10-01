@@ -17,10 +17,7 @@ if st.session_state["Result1"]:
     st.sidebar.markdown("**Select a graph**")
     pages_available = [
         "Technology Design",
-        "Network Design",
-        "Energy Balance at Node",
         "Technology Operation",
-        "Network Operation",
     ]
     selected_page = st.sidebar.selectbox("", pages_available)
 
@@ -33,24 +30,8 @@ if st.session_state["Result1"]:
     # Individual pages
     if selected_page == "Technology Design":
         plot_technology_design()
-    elif selected_page == "Network Design":
-        if isinstance(st.session_state["NodeLocations"], pd.DataFrame):
-            plot_network_design()
-        else:
-            st.markdown(
-                "Node Locations not loaded. Please upload them first in 'Load Data'."
-            )
-    elif selected_page == "Energy Balance at Node":
-        plot_energy_balance()
     elif selected_page == "Technology Operation":
         plot_technology_operation()
-    elif selected_page == "Network Operation":
-        if isinstance(st.session_state["NodeLocations"], pd.DataFrame):
-            plot_network_operation()
-        else:
-            st.markdown(
-                "Node Locations not loaded. Please upload them first in 'Load Data'."
-            )
 
 else:
     st.markdown("Please load in data first")

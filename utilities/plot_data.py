@@ -104,25 +104,14 @@ def plot_technology_design():
     Plots the technology design
     """
     data = st.session_state["Result1"]["technology_design"]
-    data = data[data["Variable"] != "technology"]
-
-    all_periods = data["Period"].unique()
-    selected_period = st.selectbox("**Period Selection**", all_periods)
 
     all_vars = data["Variable"].unique()
     selected_var = st.selectbox("**Variable Selection**", all_vars)
 
-    technologies = data["Technology"].unique()
-    selected_technologies = st.multiselect(
-        "**Technology Selection**", technologies, default=technologies
-    )
-
     submitted = st.button("Plot")
 
     if submitted:
-        data = data[data["Period"] == selected_period]
         data = data[data["Variable"] == selected_var]
-        data = data[data["Technology"].isin(selected_technologies)]
 
         st.header(selected_var)
 
@@ -208,44 +197,18 @@ def plot_technology_operation():
     """
     Plots technology operation
     """
-    all_periods = st.session_state["Result1"]["topology"]["periods"]
-    selected_period = st.selectbox("**Period Selection**", all_periods)
-
-    nodes = st.session_state["Result1"]["topology"]["nodes"]
-    selected_node = st.selectbox("**Node Selection**", nodes)
-
     data = st.session_state["Result1"]["technology_operation"]
-
-    data = data.loc[:, (selected_period, selected_node, slice(None), slice(None))]
-
-    technologies = data.columns.get_level_values("Technology").unique()
-    selected_technology = st.selectbox("**Technology Selection**", technologies)
-
-    time_agg_options = {
-        "Annual Totals": "Year",
-        "Monthly Totals": "Month",
-        "Weekly Totals": "Week",
-        "Daily Totals": "Day",
-        "Hourly Totals": "Hour",
-    }
-    time_agg = st.selectbox("**Time Aggregation**", time_agg_options.keys())
-
-    data = data.loc[:, (selected_period, slice(None), selected_technology, slice(None))]
-    aggregated_data_sum = aggregate_time(data, time_agg_options[time_agg])
-    aggregated_data_mean = aggregate_time(
-        data, time_agg_options[time_agg], aggregation="mean"
-    )
+    data.index.names = ["Timeslice"]
 
     st.header("Input")
     variables_in = [
         col
-        for col in aggregated_data_sum.columns.get_level_values("Variable")
+        for col in data.columns.get_level_values(0)
         if col.endswith("input")
     ]
-    plot_data = aggregated_data_sum.loc[
-        :, (selected_period, slice(None), slice(None), variables_in)
-    ]
-    plot_data.columns = plot_data.columns.get_level_values("Variable")
+    plot_data = data.loc[:, variables_in]
+
+    plot_data.columns = plot_data.columns.get_level_values(0)
     if not plot_data.empty:
         chart = plot_chart(plot_data)
         st.altair_chart(chart, theme="streamlit", use_container_width=True)
@@ -256,13 +219,12 @@ def plot_technology_operation():
     st.header("Output")
     variables_out = [
         col
-        for col in aggregated_data_sum.columns.get_level_values("Variable")
+        for col in data.columns.get_level_values(0)
         if col.endswith("output")
     ]
-    plot_data = aggregated_data_sum.loc[
-        :, (selected_period, slice(None), slice(None), variables_out)
-    ]
-    plot_data.columns = plot_data.columns.get_level_values("Variable")
+    plot_data = data.loc[:, variables_out]
+
+    plot_data.columns = plot_data.columns.get_level_values(0)
     if not plot_data.empty:
         chart = plot_chart(plot_data)
         st.altair_chart(chart, theme="streamlit", use_container_width=True)
@@ -272,24 +234,15 @@ def plot_technology_operation():
     st.header("Other Variables")
     variables_other = [
         x
-        for x in aggregated_data_sum.columns.get_level_values("Variable")
+        for x in data.columns.get_level_values(0)
         if ((x not in variables_in) & (x not in variables_out))
     ]
     selected_series = st.multiselect(
         "Select Series to Filter", variables_other, default=variables_other
     )
-    plot_data = aggregated_data_sum.loc[
-        :, (selected_period, slice(None), slice(None), selected_series)
-    ]
-    plot_data.columns = plot_data.columns.get_level_values("Variable")
-    plot_data_mean = aggregated_data_mean.loc[
-        :, (selected_period, slice(None), slice(None), selected_series)
-    ]
-    plot_data_mean.columns = plot_data_mean.columns.get_level_values("Variable")
+    plot_data = data.loc[:, selected_series]
 
-    mask_sum = plot_data.columns.str.contains("level")
-    mask_mean = plot_data_mean.columns.str.contains("level")
-    plot_data.loc[:, mask_sum] = plot_data_mean.loc[:, mask_mean]
+    plot_data.columns = plot_data.columns.get_level_values(0)
 
     if not plot_data.empty:
         chart = plot_chart(plot_data)
